@@ -1,5 +1,5 @@
 <template>
-    <v-dialog max-width="600PX">
+    <v-dialog max-width="600PX" v-model="dialog">
         <v-btn flat slot="activator" class="success">Add New Project</v-btn>
         <v-card>
             <v-card-title>
@@ -15,7 +15,7 @@
                         <v-date-picker v-model="due"></v-date-picker>
                     </v-menu>
                     <v-spacer></v-spacer>
-                    <v-btn class="success mx-0 mt-3" @click="submit">Add Project</v-btn>
+                    <v-btn class="success mx-0 mt-3" @click="submit" :loading="loading">Add Project</v-btn>
                 </v-form>
             </v-card-text>
 
@@ -24,6 +24,7 @@
 </template>
 <script>
 import format from 'date-fns/format'
+import db from '@/fb'
 export default {
     data(){
         return {
@@ -32,13 +33,27 @@ export default {
             due:null,
             inputRules: [
                 v => v.length >=3 || 'Minimun Length is three character'
-            ]
+            ],
+            loading:false,
+            dialog:false
         }
     },
     methods:{
         submit(){
             if(this.$refs.form.validate()){
-                console.log(this.title, this.content)
+                this.loading=true;
+
+                const project = {
+                    title: this.title,
+                    content: this.content,
+                    due: format(this.due,'Do MM YYYY'),
+                    person: 'Anower Hasan',
+                    status: 'ongoing'
+                }
+                db.collection('projects').add(project).then(()=>{
+                    this.loading = false;
+                    this.dialog = false;
+                })
             }
             
         }
